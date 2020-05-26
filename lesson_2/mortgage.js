@@ -13,10 +13,10 @@ function invalidNumber(number) {
 prompt('Welcome to the Mortgage Calculator!');
 
 while (true) {
-  
+
   //get the interest rate
   prompt("What's the annual interest rate?");
-  prompt('Example: 5.2 for 5.2%')
+  prompt('Example: 5.2 for 5.2%');
   let apr = readline.question();
   while (invalidNumber(apr)) {
     prompt("Hmm... that doesn't look like a valid number.");
@@ -33,33 +33,33 @@ while (true) {
 
   //get the loan amount
   prompt('What is the total loan amount?');
-  let amount = readline.question()
+  let amount = readline.question();
   while (invalidNumber(amount)) {
     prompt('Hmm...that doesn\'t look like a valid number.');
     amount = readline.question();
   }
 
-  //convert annual interest rate to monthly interest rate 
+  //convert annual interest rate to monthly interest rate
   let annualInterest = Number(apr) / 100;
   let monthlyInterest = annualInterest / 12;
 
-  //convert loan duration in years to months 
+  //convert loan duration in years to months
   let months = Number(years) * 12;
 
 
-  //find the monthly payment 
+  //find the monthly payment
   let monthlyPayment = Number(amount) * (monthlyInterest / (1 - Math.pow((1 + monthlyInterest), (-Number(months)))));
 
-  prompt(`Your monthly payment is $${monthlyPayment.toFixed(2)}`)
+  prompt(`Your monthly payment is $${monthlyPayment.toFixed(2)}`);
 
   prompt("Another calculation?");
   let answer = readline.question().toLowerCase();
   while (answer[0] !== 'n' && answer[0] !== 'y') {
     prompt('Please enter "y" or "n".');
     answer = readline.question().toLowerCase();
-  
+
   }
-  
+
   if (answer[0] === 'n') break;
 
 }
