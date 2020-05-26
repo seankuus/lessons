@@ -6,7 +6,8 @@ function prompt(message) {
 
 //confirm that numbers are valid and above .1 to insure proper formatting
 function invalidNumber(number) {
-  return number.trimStart() === '' || number < .1 || Number.isNaN(Number(number));
+  return number.trimStart() === '' || number < .1 ||
+  Number.isNaN(Number(number));
 }
 
 
@@ -48,7 +49,8 @@ while (true) {
 
 
   //find the monthly payment
-  let monthlyPayment = Number(amount) * (monthlyInterest / (1 - Math.pow((1 + monthlyInterest), (-Number(months)))));
+  let monthlyPayment = Number(amount) *
+  (monthlyInterest / (1 - Math.pow((1 + monthlyInterest), (-Number(months)))));
 
   prompt(`Your monthly payment is $${monthlyPayment.toFixed(2)}`);
 
