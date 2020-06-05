@@ -8,6 +8,7 @@ function prompt(message) {
 const INITIAL_MARKER = ' ';
 const HUMAN_MARKER = 'X';
 const COMPUTER_MARKER = 'O';
+const MATCH_PTS = 5;
 //explicitly define the markers used in the board
 
 let board = {
@@ -64,7 +65,7 @@ function playerChoosesSquare(board) {
   let square;
 
   while (true) {
-    prompt(`Choose a square (${emptySquares(board).join(', ')}):`);
+    prompt(`Choose a square: ${joinOr(emptySquares(board))}`);
     square = readline.question().trim();
     if (emptySquares(board).includes(square)) break;
 
@@ -96,7 +97,8 @@ function detectWinner(board) {
     for (let line = 1; line < winningLines.length; line++) {
       let [sq1, sq2, sq3] = winningLines[line];
       
-      if (board[sq1] === HUMAN_MARKER &&
+      if (
+        board[sq1] === HUMAN_MARKER &&
         board[sq2] === HUMAN_MARKER &&
         board[sq3] === HUMAN_MARKER
     ) {
@@ -113,15 +115,40 @@ function detectWinner(board) {
   return null;
 }
 
+//joinOr
+function joinOr(arr, delimeter = ', ', word = 'or') {
+  switch (arr.length) {
+    case 0: 
+      return '';
+    case 1: 
+      return `${arr[0]}`;
+    case 2: 
+      return arr.join(` ${word} `)
+    default: 
+      return arr.slice(0, arr.length - 1).join(delimeter) +
+        `${delimeter}${word} ${arr[arr.length - 1]} `;
+  }
+}
+
+
 
 function someoneWon(board) {
   return !!detectWinner(board);
 }
 
+
+//TTT Game
 while (true) {
   let board = initializeBoard();
-
+  let score = {Player: 0, Computer: 0};
+  
+  //Match Loop
   while (true) {
+    
+    displayScore(score.Player, score.Computer);
+    
+    //Game Loop
+    while (true) {
     displayBoard(board);
 
     playerChoosesSquare(board);
@@ -135,13 +162,39 @@ while (true) {
 
   if (someoneWon(board)) {
     prompt(`${detectWinner(board)} won!`);
+    updateScores(score, detectWinner(board));
   } else {
     prompt("It's a tie!");
   }
-
-  prompt('Play again? (y or n)');
+ 
+ //Test to see if the match has been won
+ if (score.Player === MATCH_PTS) {
+   prompt('Player won the match!');
+   break;
+ } else if (score.Computer === MATCH_PTS) {
+   prompt('Computer won the match!');
+   break;
+ }
+ 
+ }
+  prompt('Play again?');
   let answer = readline.question().toLowerCase()[0];
   if (answer !== 'y') break;
 }
 
 prompt('Thanks for playing Tic Tac Toe!');
+
+//Keep Score
+function displayScore(playerScore, computerScore) {
+  prompt(`Current score -- Player: ${playerScore}, Computer: ${computerScore}`)
+}
+
+function updateScores(score, winner) {
+  score[winner] += 1;
+}
+
+function resetScore(score) {
+  score.Player = 0;
+  score.Computer = 0;
+}
+
