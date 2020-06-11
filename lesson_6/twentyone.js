@@ -4,12 +4,23 @@ function prompt(message) {
   console.log(`--> ${message}`);
 }
 
-const DECK_SUIT = ['♦', '♥', '♣', '♠'];
-const DECK_TYPE = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'J', 'Q', 'K'];
-const VALID_ACTIONS = {h: 'hit', s: 'stay'};
+const CARD_SUIT = ['♦', '♥', '♣', '♠'];
+const CARD_VALUES = {
+  2: "2",
+  3: "3",
+  4: "4",
+  5: "5",
+  6: "6",
+  7: "7",
+  8: "8",
+  9: "9",
+  10: "10",
+  J: "10",
+  Q: "10",
+  K: "10",
+  A: "11"
+};
 const VALID_ANSWERS = ['y', 'n'];
-const HIT = 'h';
-const STAY = 's';
 const MAX_VALUE = 21;
 const DEALER_MAX_STAY = 17;
 const GAMES_TO_WIN = 3;
@@ -18,42 +29,31 @@ const GAMES_TO_WIN = 3;
 
 //Create a deck
 function initializeDeck() {
-  let deck = DECK_SUIT.map(suit => {
-    return DECK_TYPE.map(type => [suit, type]);
-  });
-  return shuffle(deck);
-}
-
-//Shuffle the Deck 
-function shuffle(cards) {
-  for (let index = cards.length - 1; index > 0; index--) {
-    let otherIndex = Math.floor(Math.random() * (index + 1)); 
-    [cards[index], cards[otherIndex]] = [cards[otherIndex], cards[index]]; 
+  let result = [];
+  for (let suit in CARD_SUIT) {
+    for (let card in CARD_VALUES) {
+      result.push([CARD_SUIT[suit], card]);
+    }
   }
-  return cards;
+
+  return result;
 }
 
-//Turn the face cards into their names
-function findCard(cards) {
-  return cards.map(card => {
-    let type = card[1];
-   
-   switch (type) {
-     case 'A': return 'Ace';
-     case 'J': return 'Jack';
-     case 'K': return 'King';
-     case 'Q': return 'Queen';
-     default: return type;
-   } 
-  });
+//Shuffle the Deck
+function shuffle(deck) {
+  for (let index = deck.length - 1; index > 0; index--) {
+    let otherIndex = Math.floor(Math.random() * (index + 1));
+    [deck[index], deck[otherIndex]] = [deck[otherIndex], deck[index]];
+  }
+  return deck;
 }
 
 
-//--> All Hand Related Functions 
+//--> All Hand Related Functions
 
 //Deal Cards
 function dealCards(deck, qty) {
-  return deck.splice(0, qty); 
+  return deck.splice(0, qty);
 }
 
 function dealCard(deck, playerCards) {
@@ -70,34 +70,35 @@ function hand(cards) {
 //Find the value of the hand
 function getTotal(cards) {
   let values = cards.map(value => value[1]);
-  
-  let sum = values.reduce((accumulator, value) => { 
+
+  let sum = values.reduce((accumulator, value) => {
     if (value === 'A') {
       return accumulator + 11;
     } else if (['J', 'Q', 'K'].includes(value)) {
       return accumulator + 10;
     } else {
-      return accumulator + Number(value); 
+      return accumulator + Number(value);
     }
   }, 0);
-  
-   sum = values.filter(value => value === 'A').reduce((acc) => {
+
+  sum = values.filter(value => value === 'A').reduce((acc) => {
     if (acc > MAX_VALUE) return acc - 10;
     return acc;
   }, sum);
-  
+
   return sum;
-  
+
 }
 
-//Update total after new card is dealt
+//Update total of the hand
 function updateTotal(playerTotal, playerHand) {
   playerTotal = getTotal(playerHand);
   return playerTotal;
 }
 
 //Display the hand, with a mask for the 2nd dealer card
-function displayHand(playerHand, dealerHand, playerTotal, dealerTotal, mask = false) {
+function displayHand(playerHand, dealerHand, playerTotal, dealerTotal,
+  mask = false) {
   if (mask) {
     prompt('----------');
     prompt(`Dealer's hand: ${dealerHand[0][1]}${dealerHand[0][0]} ??`);
@@ -115,24 +116,15 @@ function displayHand(playerHand, dealerHand, playerTotal, dealerTotal, mask = fa
 
 
 //Is the total of the hand greater than 21?
-function busted(cards) {
-  getTotal(cards) > MAX_VALUE;
-}
-
-//Determine whether the dealer hits
-function hitDealer(cards) {
-  getTotal(cards) < DEALER_MAX_STAY;
-}
-
-
-//Joiner to display list of cards in hand
-function joinAnd(cards, delimeter = ', ', word = 'and') {
-  return cards.slice(0, cards.length - 1).join(delimeter) + 
-  `${delimeter}${word} ${cards[cards].length - 1}.`;
+function busted(hand) {
+  if (getTotal(hand) > MAX_VALUE) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 //Scoring
-
 
 function initializeScores() {
   return {Player: 0, Dealer: 0};
@@ -145,38 +137,32 @@ function displayScore(score) {
 
 function gameWinner(score) {
   let winner = '';
-  
+
   for (let player in score) {
     if (score[player] >= GAMES_TO_WIN) {
       winner = player;
+    }
   }
-}
-
-return winner;
-
+  return winner;
 }
 
 function updateScores(playerTotal, dealerTotal, scores) {
   let result = determineResult(playerTotal, dealerTotal);
-  
+
   switch (result) {
     case 'PLAYER_BUST':
-    case 'DEALER' : 
+    case 'DEALER' :
       scores['Dealer'] += 1;
-    break;
+      break;
     case 'DEALER_BUST':
     case 'PLAYER':
       scores['Player'] += 1;
-    break;
+      break;
     case 'TIE':
   }
 }
 
-
-//Dealer turn 
-
-
-//Calculate total, display winner 
+//Calculate total, display winner
 function determineResult(playerTotal, dealerTotal) {
   if (playerTotal > MAX_VALUE) {
     return 'PLAYER_BUST';
@@ -185,7 +171,7 @@ function determineResult(playerTotal, dealerTotal) {
   } else if (playerTotal > dealerTotal) {
     return 'PLAYER';
   } else if (playerTotal < dealerTotal) {
-    return 'DEALER'; 
+    return 'DEALER';
   } else if (playerTotal === dealerTotal) {
     return 'TIE';
   } else {
@@ -193,18 +179,18 @@ function determineResult(playerTotal, dealerTotal) {
   }
 }
 
-function displayResult(playerValue, dealerValue) {
-  let result = determineResult(playerValue, dealerValue);
-  
+function displayResult(playerTotal, dealerTotal) {
+  let result = determineResult(playerTotal, dealerTotal);
+
   switch (result) {
     case 'PLAYER_BUST': prompt('You busted, the dealer won!');
-    break;
+      break;
     case 'DEALER_BUST': prompt('The dealer busted, you won!');
-    break;
+      break;
     case 'PLAYER': prompt('You won!');
-    break;
+      break;
     case 'DEALER': prompt('Dealer won!');
-    break;
+      break;
     case 'TIE': prompt('It\'s a tie!');
   }
 }
@@ -220,81 +206,85 @@ function promptToContinue() {
 while (true) {
   console.clear();
   let scores = initializeScores();
-  prompt(`Welcome to 21! The first to ${GAMES_TO_WIN} games wins.`)
-  
+  prompt(`Welcome to 21! The first to ${GAMES_TO_WIN} games wins.`);
+  promptToContinue();
+
   //Match Loop
   while (!gameWinner(scores)) {
     console.clear();
-    let deck = initializeDeck();
+    let deck = shuffle(initializeDeck());
     let playerHand = dealCards(deck, 2);
     let dealerHand = dealCards(deck, 2);
     let playerTotal = getTotal(playerHand);
     let dealerTotal = getTotal(dealerHand);
-    displayScore(scores)
+    displayScore(scores);
     displayHand(playerHand, dealerHand, playerTotal, dealerTotal, true);
-    
+
     //Player Loop
-    while (true) {
-    prompt("Would you like to hit or stay?");
-    let answer = readline.question().trim();
-  
-    if (answer.toLowerCase() === 'hit') {
-      prompt('Hit me!');
-      dealCard(deck, playerHand);
-      playerTotal = updateTotal(playerTotal, playerHand);
-      displayHand(playerHand, dealerHand, playerTotal, dealerTotal, true);
+    while (!busted(playerHand)) {
+      prompt("Would you like to hit or stay?");
+      let answer = readline.question().trim();
+
+      if (answer.toLowerCase() === 'hit') {
+        prompt('Hit me!');
+        dealCard(deck, playerHand);
+        playerTotal = updateTotal(playerTotal, playerHand);
+        displayHand(playerHand, dealerHand, playerTotal, dealerTotal, true);
+      } else if (answer.toLowerCase() === 'stay') break;
+      else {
+        prompt('Invalid response');
+      }
     }
-    if (answer[0].toLowerCase() === 'stay' || busted()) break;
-  }
-  
-  if (busted(playerTotal)) {
-    updateScores(playerTotal, dealerTotal, scores);
-    displayScore(scores);
+
+    if (busted(playerHand)) {
+      displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
+      displayResult(playerTotal, dealerTotal);
+      updateScores(playerTotal, dealerTotal, scores);
+      displayScore(scores);
+      promptToContinue();
+      continue;
+    } else {
+      prompt ('Player Stayed');
+      displayHand(playerHand, dealerHand, playerTotal, dealerTotal, true);
+      prompt('Dealer\'s Turn');
+      promptToContinue();
+    }
+
+    console.clear();
+    displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
+
+
+    //Dealer Loop
+
+    while (dealerTotal < DEALER_MAX_STAY) {
+      displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
+      dealCard(deck, dealerHand);
+      displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
+      prompt('Dealer hit!');
+      dealerTotal = updateTotal(dealerTotal, dealerHand);
+
+    }
+
+    if (busted(dealerHand)) {
+      displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
+      displayResult(playerTotal, dealerTotal);
+    } else {
+      displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
+      prompt('Dealer Stayed');
+    }
+
     displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
     displayResult(playerTotal, dealerTotal);
-    promptToContinue();
-  } else {
-    prompt ('Player Stayed');
-    displayHand(playerHand, dealerHand, playerTotal, dealerTotal, true);
-  }
-  
-  console.clear();
-  displayScore(scores);
-  displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
-  prompt('Dealer\'s Turn')
-  
-  //Dealer Loop
-  
-  while (dealerTotal < DEALER_MAX_STAY) {
-    displayScore(scores);
-    displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
-    dealCard(deck, dealerHand);
-    dealerTotal = updateTotal(dealerTotal, dealerHand);
-  }
-  
-  if (busted(dealerTotal)) {
     updateScores(playerTotal, dealerTotal, scores);
     displayScore(scores);
-    displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
-    displayResult(playerTotal, dealerTotal);
     promptToContinue();
     continue;
-  } else {
-    updateScores(playerTotal, dealerTotal, scores);
-    displayScore(scores);
-    displayHand(playerHand, dealerHand, playerTotal, dealerTotal, false);
-    prompt('Dealer Stayed');
   }
-  
-  displayResult(playerTotal, dealerTotal);
-  continue;
-  }
-  
+
   if (gameWinner(scores)) {
-      prompt(`${gameWinner(scores)} has won the game!`);
-      break;
+    prompt(`${gameWinner(scores)} has won the game!`);
   }
-  
+
   //Ask to play again
   prompt('Would you like to play again?');
   let answer = readline.question().trim();
