@@ -17,7 +17,7 @@ function runningTotal(array) {
   return runningTotalArray;
 }
 
-//tests
+//tests from LS
 console.log(runningTotal([2, 5, 13]));
 console.log(runningTotal([14, 11, 7, 15, 20]));
 console.log(runningTotal([3]));
