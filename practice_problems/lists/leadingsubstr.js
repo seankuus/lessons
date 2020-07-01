@@ -27,3 +27,4 @@ function substringsAtStart2(string) {
     .split("")
     .map((_, idx, stringArray) => stringArray.slice(0, idx + 1).join(""));
 }
+
